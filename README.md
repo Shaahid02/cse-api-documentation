@@ -2,8 +2,6 @@
 
 This repository contains a comprehensive Python client for the Colombo Stock Exchange (CSE) API, along with documentation, examples, and powerful analysis tools.
 
----
-
 <b>Visit <a href='https://shaahid02.github.io/cse-api-documentation/'>this link</a> to see web view<b>
 
 ## 📚 Table of Contents
