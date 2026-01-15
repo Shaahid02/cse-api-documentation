@@ -1,143 +1,1372 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CSE API Documentation</title>
-<style>
-  :root{
-    --bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#06b6d4;--glass:rgba(255,255,255,0.03);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071028,#071429);color:#e6eef6;padding:20px}
-  header{text-align:center;margin-bottom:30px}
-  header h1{font-size:28px;margin-bottom:10px;color:#fff}
-  header p{color:var(--muted)}
-  .endpoint{background:var(--card);margin-bottom:16px;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-  .endpoint summary{cursor:pointer;padding:14px;font-size:18px;font-weight:600;background:linear-gradient(90deg,var(--accent),#7c3aed);color:#021}
-  .endpoint summary:hover{filter:brightness(1.1)}
-  .endpoint-content{padding:16px;font-size:14px;line-height:1.5;background:var(--card)}
-  code,pre{background:var(--glass);padding:4px 6px;border-radius:6px;font-family:monospace}
-  pre{display:block;overflow-x:auto;margin-top:6px;padding:12px}
-  table{border-collapse:collapse;width:100%;margin-top:10px}
-  th,td{border:1px solid rgba(255,255,255,0.1);padding:8px;font-size:13px}
-  th{background:rgba(255,255,255,0.05)}
-  img.logo{max-height:60px;margin-top:8px;border-radius:6px;background:#fff;padding:2px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSE API Documentation</title>
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --secondary-bg: #1e293b;
+            --card-bg: #334155;
+            --accent: #06b6d4;
+            --accent-hover: #0891b2;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, #1e293b 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .base-url {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+
+        .nav {
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .nav-item {
+            background: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--accent);
+        }
+
+        .nav-item:hover {
+            background: var(--accent);
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+
+        .endpoint {
+            background: var(--secondary-bg);
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+        }
+
+        .endpoint summary {
+            cursor: pointer;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .endpoint summary:hover {
+            background: linear-gradient(135deg, var(--accent-hover), #8b5cf6);
+        }
+
+        .endpoint[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .endpoint-content {
+            padding: 25px;
+            background: var(--card-bg);
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .method-get {
+            background: var(--success);
+            color: white;
+        }
+
+        .method-post {
+            background: var(--warning);
+            color: white;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section h4 {
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .url-box {
+            background: var(--primary-bg);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .params-table th,
+        .params-table td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .params-table th {
+            background: var(--primary-bg);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .params-table td {
+            background: var(--secondary-bg);
+        }
+
+        .required {
+            color: var(--error);
+            font-weight: bold;
+        }
+
+        .optional {
+            color: var(--text-muted);
+        }
+
+        pre {
+            background: var(--primary-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        code {
+            background: var(--primary-bg);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .response-example {
+            margin-top: 15px;
+        }
+
+        .company-search {
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .company-search h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1em;
+        }
+
+        .company-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .company-item {
+            padding: 10px;
+            background: var(--card-bg);
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .company-item:hover {
+            background: var(--accent);
+        }
+
+        .company-symbol {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .company-directory {
+            background: var(--secondary-bg);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .company-directory h3 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .directory-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-button {
+            background: var(--accent);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .company-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .company-card:hover {
+            background: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .company-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .copy-symbol {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-symbol:hover {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .company-name {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .company-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button.active {
+            background: var(--accent);
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .filter-button:hover {
+            background: var(--accent-hover);
+            color: var(--text-primary);
+        }
+
+        .download-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .endpoint summary {
+                font-size: 1.1em;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Colombo Stock Exchange API — Documentation</h1>
-    <p>Base URL: <code>https://www.cse.lk/api/</code></p>
-    <p>All endpoints use <strong>POST</strong> requests with <code>application/x-www-form-urlencoded</code> data.</p>
-  </header>
+    <div class="container">
+        <header>
+            <h1>Colombo Stock Exchange API</h1>
+            <p>Complete API Documentation for CSE Trading Data</p>
+            <p>Access real-time stock prices, company information, and market data</p>
+            <div class="base-url">
+                Base URL: https://www.cse.lk/api/
+            </div>
+        </header>
 
-  <section>
-    <details class="endpoint"><summary>companyInfoSummery</summary><div class="endpoint-content"><p><strong>URL:</strong> <code>https://www.cse.lk/api/companyInfoSummery</code></p><p><strong>Parameters:</strong> <code>symbol</code> (string, required)</p><p><strong>Example Response:</strong></p><pre>{
-  "reqLogo": {"path": "upload_logo/378_1601611239.jpeg"},
-  "reqSymbolInfo": {"symbol": "LOLC.N0000", "name": "L O L C HOLDINGS PLC", ...}
-}</pre><p><strong>Logo:</strong></p><img class="logo" src="https://cdn.cse.lk/cmt/upload_logo/378_1601611239.jpeg" alt="Company Logo"></div></details>
+        <div class="nav">
+            <h3>Quick Navigation</h3>
+            <div class="nav-grid">
+                <a href="#trade-summary" class="nav-item">Trade Summary</a>
+                <a href="#company-info" class="nav-item">Company Information</a>
+                <a href="#market-cap" class="nav-item">Market Capitalization</a>
+                <a href="#top-gainers" class="nav-item">Top Gainers</a>
+                <a href="#top-losers" class="nav-item">Top Losers</a>
+                <a href="#active-trades" class="nav-item">Most Active Trades</a>
+                <a href="#market-status" class="nav-item">Market Status</a>
+                <a href="#detailed-trades" class="nav-item">Detailed Trades</a>
+                <a href="#share-price" class="nav-item">Today Share Price</a>
+                <a href="#company-directory" class="nav-item">Company Directory</a>
+            </div>
+        </div>
 
-    <details class="endpoint"><summary>tradeSummary</summary><div class="endpoint-content"><pre>{"reqTradeSummery": [{"symbol": "ABAN.N0000", "price": 579.75, ...}]</pre></div></details>
+        <div class="company-directory" id="company-directory">
+            <h3>
+                Company Directory
+                <div class="directory-controls">
+                    <button class="control-button" onclick="toggleDirectory()">Show All Companies</button>
+                    <button class="control-button" onclick="downloadCompanyData('json')">Download JSON</button>
+                    <button class="control-button" onclick="downloadCompanyData('csv')">Download CSV</button>
+                </div>
+            </h3>
+            
+            <div class="company-search">
+                <input type="text" id="companySearch" class="search-input" placeholder="Search companies by name or symbol...">
+            </div>
+            
+            <div class="filter-controls">
+                <button class="filter-button active" onclick="filterBySector('all')">All Companies</button>
+                <button class="filter-button" onclick="filterBySector('banking')">Banking</button>
+                <button class="filter-button" onclick="filterBySector('manufacturing')">Manufacturing</button>
+                <button class="filter-button" onclick="filterBySector('hotels')">Hotels & Travel</button>
+                <button class="filter-button" onclick="filterBySector('plantations')">Plantations</button>
+            </div>
+            
+            <div id="companyGrid" class="company-grid" style="display: none;"></div>
+            
+            <div class="download-section">
+                <h4 style="color: var(--accent); margin-bottom: 10px;">Quick Access</h4>
+                <p style="color: var(--text-muted); margin-bottom: 10px;">Copy company symbols for API requests:</p>
+                <div class="download-buttons">
+                    <button class="control-button" onclick="copyPopularSymbols()">Copy Popular Symbols</button>
+                    <button class="control-button" onclick="showApiExamples()">Show API Examples</button>
+                </div>
+            </div>
+        </div>
 
-    <details class="endpoint"><summary>todaySharePrice</summary><div class="endpoint-content"><pre>[{"symbol": "ABAN.N0000", "lastTradedPrice": 579.75, ...}]</pre></div></details>
+        <section>
+            <details class="endpoint" id="trade-summary">
+                <summary>
+                    Trade Summary
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/tradeSummary</div>
+                    </div>
 
-    <details class="endpoint"><summary>topGainers</summary><div class="endpoint-content"><pre>[{"symbol": "HEXP.N0000", "changePercentage": 15.86, ...}]</pre></div></details>
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Retrieves comprehensive trading summary information for all listed securities on the Colombo Stock Exchange.</p>
+                    </div>
 
-    <details class="endpoint"><summary>topLooses</summary><div class="endpoint-content"><pre>[{"symbol": "TESS.X0000", "changePercentage": -10.0, ...}]</pre></div></details>
+                    <div class="section">
+                        <h4>Parameters</h4>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">No parameters required</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-    <details class="endpoint"><summary>mostActiveTrades</summary><div class="endpoint-content"><pre>[{"symbol": "KZOO.N0000", "tradeVolume": 1102.0, ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>getNewListingsRelatedNoticesAnnouncements</summary><div class="endpoint-content"><pre>{"newListingRelatedAnnouncements": [{"company": "COMMERCIAL BANK OF CEYLON PLC", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>getBuyInBoardAnnouncements</summary><div class="endpoint-content"><pre>{"buyInBoardAnnouncements": [{"company": "TRADING AND MARKET SURVEILLANCE", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>approvedAnnouncement</summary><div class="endpoint-content"><pre>{"approvedAnnouncements": [{"company": "LANKEM DEVELOPMENTS PLC", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>getCOVIDAnnouncements</summary><div class="endpoint-content"><pre>{"covidAnnouncements": [{"company": "LANKA MILK FOODS (CWE) PLC", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>getFinancialAnnouncement</summary><div class="endpoint-content"><pre>{"reqFinancialAnnouncemnets": [{"symbol": "LDEV", "fileText": "Annual Report 2024/2025", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>circularAnnouncement</summary><div class="endpoint-content"><pre>{"reqCircularAnnouncement": [{"fileText": "EMPLOYEE SHARE OPTION SCHEMES", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>directiveAnnouncement</summary><div class="endpoint-content"><pre>{"reqDirectiveAnnouncement": [{"fileText": "DIRECTIVE ISSUED ...", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>getNonComplianceAnnouncements</summary><div class="endpoint-content"><pre>{"nonComplianceAnnouncements": [{"company": "BROWNS BEACH HOTELS PLC", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>marketStatus</summary><div class="endpoint-content"><pre>{"status": "Market Closed"}</pre></div></details>
-
-    <details class="endpoint"><summary>marketSummery</summary><div class="endpoint-content"><pre>{"tradeVolume": 3263762020.0, "shareVolume": 115084307, ...}</pre></div></details>
-
-    <details class="endpoint"><summary>aspiData</summary><div class="endpoint-content"><pre>{"value": 19826.57, "change": 21.77, ...}</pre></div></details>
-
-    <details class="endpoint"><summary>snpData</summary><div class="endpoint-content"><pre>{"value": 5825.39, "change": -2.46, ...}</pre></div></details>
-
-    <details class="endpoint"><summary>chartData</summary><div class="endpoint-content"><p>Requires <code>symbol</code> but may return HTTP 400 for some values.</p></div></details>
-
-    <details class="endpoint"><summary>allSectors</summary><div class="endpoint-content"><pre>[{"symbol": "EGY", "indexName": "S&P/CSE Energy Industry Group Index", ...}]</pre></div></details>
-
-    <details class="endpoint"><summary>Detailed Trades</summary><div class="endpoint-content"><p><strong>URL:</strong> <code>https://www.cse.lk/api/detailedTrades</code></p><p><strong>Parameters:</strong> <code>symbol</code> (string, not required)</p><p><strong>Example Response:</strong></p><pre>
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>{
+  "reqTradeSummery": [
     {
-      "reqDetailTrades": [
-          {
-              "id": 204,
-              "securityId": null,
-              "name": "ABANS ELECTRICALS PLC",
-              "symbol": "ABAN.N0000",
-              "price": 585.0,
-              "qty": 562,
-              "trades": 7,
-              "change": 29.0,
-              "changePercentage": 5.215827338129497
-          },
-        ]
-      }</details>
+      "id": 204,
+      "name": "ABANS ELECTRICALS PLC",
+      "symbol": "ABAN.N0000",
+      "quantity": 6,
+      "percentageChange": -3.0786146234194613,
+      "change": -28.0,
+      "price": 881.5,
+      "previousClose": 909.5,
+      "high": 934.25,
+      "low": 875.25,
+      "lastTradedTime": 1756356567693,
+      "issueDate": "01/JAN/1984",
+      "turnover": 529452.75,
+      "sharevolume": 588,
+      "tradevolume": 16,
+      "marketCap": 4.64805432E9,
+      "marketCapPercentage": 0.0,
+      "open": 903.0,
+      "closingPrice": 0.0,
+      "crossingVolume": 588,
+      "crossingTradeVol": 16,
+      "status": 0
+    }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </details>
 
-    <details class="endpoint"><summary>Daily Market Summary</summary><div class="endpoint-content"><p><strong>URL:</strong> <code>https://www.cse.lk/api/dailyMarketSummery</code></p><p><strong>Parameters:</strong> None</p><p><strong>Example Response:</strong></p><pre>
-    [
-      [
-        {
-            "id": 22240,
-            "tradeDate": 1754505000000,
-            "marketTurnover": 3.26376192E9,
-            "marketTrades": 30274.0,
-            "marketDomestic": 30003.0,
-            "marketForeign": 271.0,
-            "equityTurnover": 3.26376192E9,
-            "equityDomesticPurchase": 3.15549645E9,
-            "equityDomesticSales": 3.18251674E9,
-            "equityForeignPurchase": 1.08265512E8,
-            "equityForeignSales": 8.1245208E7,
-            "volumeOfTurnOverNumber": 1.15084304E8,
-            "volumeOfTurnoverDomestic": 1.13407144E8,
-            "volumeOfTurnoverForeign": 1677157,
-            "tradesNo": 30274,
-            "tradesNoDomestic": 30003,
-            "tradesNoForeign": 271,
-            "listedCompanyNumber": 286,
-            "tradeCompanyNumber": 264,
-            "marketCap": 6.940225783432E12,
-            "cdsHoldingsTotal": 1.76301605E11,
-            "cdsHoldingsDomestic": 1.45956422E11,
-            "cdsHoldingsForeign": 3.03451935E10,
-            "cdsMarketValueTotal": 5.5536905E12,
-            "cdsMarketValueDomestic": 4.5569682E12,
-            "cdsMarketValueForeign": 9.9672234E11,
-            "corporateDebtValue": 0.0,
-            "governmentDebtValue": 0.0,
-            "triasi": 29913.8,
-            "spt": 11861.33,
-            "asi": 19826.57,
-            "mpi": null,
-            "spp": 5825.39,
-            "trimpi": null,
-            "per": 9.2,
-            "pbv": 1.3,
-            "dy": 2.5
+            <details class="endpoint" id="company-info">
+                <summary>
+                    Company Information Summary
+                    <span class="method-badge method-post">POST</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/companyInfoSummery</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Retrieves detailed information about a specific company including beta values, logo, and comprehensive symbol information.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Parameters</h4>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>symbol</td>
+                                    <td>string</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Company trading symbol</td>
+                                    <td>ABAN.N0000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section">
+                        <h4>Request Example</h4>
+                        <pre>POST https://www.cse.lk/api/companyInfoSummery
+Content-Type: application/x-www-form-urlencoded
+
+symbol=ABAN.N0000</pre>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>{
+  "reqSymbolBetaInfo": {
+    "securityId": 642,
+    "triASIBetaValue": 0.761875,
+    "betaValueSPSL": 0.6285369,
+    "triASIBetaPeriod": "2025",
+    "quarter": 1
+  },
+  "reqTagsLogo": null,
+  "reqLogo": {
+    "id": 2232,
+    "path": "upload_logo/642_1603172106.jpeg"
+  },
+  "reqSymbolInfo": {
+    "id": 204,
+    "symbol": "ABAN.N0000",
+    "name": "ABANS ELECTRICALS PLC",
+    "issueDate": "01/JAN/1984",
+    "quantityIssued": 5110560,
+    "parValue": 1.0,
+    "issuedPrice": null,
+    "lastTradedPrice": 899.75,
+    "wtdHiPrice": 958.5,
+    "mtdHiPrice": 999.0,
+    "ytdHiPrice": 999.0,
+    "p12HiPrice": 999.0,
+    "allHiPrice": 999.0,
+    "allLowPrice": 8.75,
+    "wtdLowPrice": 825.0,
+    "mtdLowPrice": 517.5,
+    "ytdLowPrice": 350.0,
+    "p12LowPrice": 213.5,
+    "previousClose": 909.5,
+    "marketCap": 4.59822636E9,
+    "marketCapPercentage": 0.062516466,
+    "change": -9.75,
+    "changePercentage": -1.0720175920835624,
+    "isin": "LK0001N00004"
+  }
+}</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="market-cap">
+                <summary>
+                    Market Capitalization
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/list_by_market_cap</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns a list of companies sorted by market capitalization, showing the largest companies by market value.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>{
+  "reqByMarketcap": [
+    {
+      "id": 297,
+      "name": "JOHN KEELLS HOLDINGS PLC",
+      "symbol": "JKH.N0000",
+      "high": 23.1,
+      "low": 22.9,
+      "percentageChange": -0.4329004329004329,
+      "change": -0.1,
+      "price": 23.0,
+      "quantity": 15,
+      "issueDate": "23/OCT/1986",
+      "sharevolume": 2471143,
+      "tradevolume": 531,
+      "turnover": 5.68206855E7,
+      "lastTradedTime": 1756361314034,
+      "marketCap": 4.06384548453E11,
+      "marketCapPercentage": 5.5183125,
+      "issuedQTY": 17668893411
+    }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="top-gainers">
+                <summary>
+                    Top Gainers
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/topGainers</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns the top performing stocks with highest percentage gains for the trading day.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>[
+  {
+    "id": 50060468,
+    "securityId": 44,
+    "symbol": "PHAR.N0000",
+    "price": 169.0,
+    "change": 33.0,
+    "changePercentage": 24.264705882352942,
+    "tradeDate": 1756371681000
+  }
+]</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="top-losers">
+                <summary>
+                    Top Losers
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/topLooses</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns the worst performing stocks with highest percentage losses for the trading day.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>[
+  {
+    "id": 50060468,
+    "securityId": 44,
+    "symbol": "EXAMPLE.N0000",
+    "price": 125.0,
+    "change": -15.0,
+    "changePercentage": -10.714285714285714,
+    "tradeDate": 1756371681000
+  }
+]</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="active-trades">
+                <summary>
+                    Most Active Trades
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/mostActiveVolPercentage</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns stocks with the highest trading activity by volume percentage.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>[
+  {
+    "id": 50060642,
+    "securityId": 524,
+    "symbol": "HEXP.N0000",
+    "tradeVolume": 918.0,
+    "shareVolume": 609570.0,
+    "turnover": 6.111114025E7,
+    "percentageShareVolume": 2.539875
+  }
+]</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="market-status">
+                <summary>
+                    Market Status
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/marketStatus</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns the current status of the market (open/closed).</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>{
+  "status": "Market Closed"
+}</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="detailed-trades">
+                <summary>
+                    Detailed Trades
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/detailedTrades</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns detailed trading information for all securities.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>{
+  "reqDetailTrades": [
+    {
+      "id": 204,
+      "securityId": null,
+      "name": "ABANS ELECTRICALS PLC",
+      "symbol": "ABAN.N0000",
+      "price": 934.25,
+      "qty": 1,
+      "trades": 1,
+      "change": 24.75,
+      "changePercentage": 2.721275426058274
+    }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </details>
+
+            <details class="endpoint" id="share-price">
+                <summary>
+                    Today Share Price
+                    <span class="method-badge method-get">GET</span>
+                </summary>
+                <div class="endpoint-content">
+                    <div class="section">
+                        <h4>Endpoint URL</h4>
+                        <div class="url-box">https://www.cse.lk/api/todaySharePrice</div>
+                    </div>
+
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Returns current day's share price information for all listed securities.</p>
+                    </div>
+
+                    <div class="section">
+                        <h4>Response Example</h4>
+                        <pre>[
+  {
+    "id": 204,
+    "symbol": "ABAN.N0000",
+    "open": 903.0,
+    "high": 934.25,
+    "low": 856.0,
+    "lastTradedPrice": 906.0,
+    "change": -3.5,
+    "changePercentage": -0.38482684,
+    "crossingVolume": 4248,
+    "tradesTime": 1756365609585,
+    "quantity": 355
+  }
+]</pre>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <div class="footer">
+            <p>&copy; 2026 Colombo Stock Exchange API Documentation</p>
+            <p>Generated on January 15, 2026</p>
+        </div>
+    </div>
+
+    <script>
+        // Load all company data from the JSON file structure
+        const companyData = [
+            { "id": 204, "name": "ABANS ELECTRICALS PLC", "symbol": "ABAN.N0000", "securityId": 642, "sector": "manufacturing" },
+    { "id": 1845, "name": "ABANS FINANCE PLC", "symbol": "AFSL.N0000", "securityId": 1069, "sector": "financial" },
+    { "id": 2065, "name": "ACCESS ENGINEERING PLC", "symbol": "AEL.N0000", "securityId": 1141, "sector": "construction" },
+    { "id": 472, "name": "ACL CABLES PLC", "symbol": "ACL.N0000", "securityId": 644, "sector": "manufacturing" },
+    { "id": 406, "name": "ACL PLASTICS PLC", "symbol": "APLA.N0000", "securityId": 643, "sector": "manufacturing" },
+    { "id": 554, "name": "ACME PRINTING & PACKAGING PLC", "symbol": "ACME.N0000", "securityId": 661, "sector": "manufacturing" },
+    { "id": 163, "name": "AGALAWATTE  PLANTATIONS  PLC", "symbol": "AGAL.N0000", "securityId": 704, "sector": "plantations" },
+    { "id": 2026, "name": "AGSTAR PLC", "symbol": "AGST.N0000", "securityId": 1121, "sector": "diversified" },
+    { "id": 144, "name": "AITKEN SPENCE HOTEL HOLDINGS PLC", "symbol": "AHUN.N0000", "securityId": 521, "sector": "hotels" },
+    { "id": 343, "name": "AITKEN SPENCE PLC", "symbol": "SPEN.N0000", "securityId": 501, "sector": "diversified" },
+    { "id": 395, "name": "ALLIANCE FINANCE COMPANY PLC", "symbol": "ALLI.N0000", "securityId": 341, "sector": "financial" },
+    { "id": 5511, "name": "ALPHA FIRE SERVICES PLC", "symbol": "AFS.N0000", "securityId": 2774, "sector": "services" },
+    { "id": 3082, "name": "ALUMEX PLC", "symbol": "ALUM.N0000", "securityId": 1323, "sector": "manufacturing" },
+    { "id": 3046, "name": "AMANA BANK PLC", "symbol": "ABL.N0000", "securityId": 1303, "sector": "banking" },
+    { "id": 364, "name": "AMANA TAKAFUL PLC", "symbol": "ATL.N0000", "securityId": 361, "sector": "insurance" },
+    { "id": 3575, "name": "AMANA TAKAFUL LIFE PLC", "symbol": "ATLL.N0000", "securityId": 1484, "sector": "insurance" },
+    { "id": 2145, "name": "AMBEON CAPITAL PLC", "symbol": "TAP.N0000", "securityId": 1181, "sector": "financial" },
+    { "id": 121, "name": "AMBEON HOLDINGS PLC", "symbol": "GREG.N0000", "securityId": 782, "sector": "diversified" },
+    { "id": 3244, "name": "ARPICO INSURANCE PLC", "symbol": "AINS.N0000", "securityId": 1405, "sector": "insurance" },
+    { "id": 2025, "name": "ASIA ASSET FINANCE PLC", "symbol": "AAF.N0000", "securityId": 1108, "sector": "financial" },
+    { "id": 160, "name": "ASIA CAPITAL PLC", "symbol": "ACAP.N0000", "securityId": 363, "sector": "financial" },
+    { "id": 2209, "name": "ASIA SIYAKA COMMODITIES LIMITED", "symbol": "ASIY.N0000", "securityId": 1205, "sector": "commodities" },
+    { "id": 143, "name": "ASIAN HOTELS AND PROPERTIES PLC", "symbol": "AHPL.N0000", "securityId": 690, "sector": "hotels" },
+    { "id": 240, "name": "ASIRI SURGICAL HOSPITAL PLC", "symbol": "AMSL.N0000", "securityId": 513, "sector": "healthcare" },
+    { "id": 225, "name": "ASIRI HOSPITAL HOLDINGS PLC", "symbol": "ASIR.N0000", "securityId": 512, "sector": "healthcare" },
+    { "id": 1844, "name": "ASSOCIATED MOTOR FINANCE COMPANY PLC", "symbol": "AMF.N0000", "securityId": 1068, "sector": "financial" },
+    { "id": 5753, "name": "Agarapatana Plantations PLC", "symbol": "AGPL.N0000", "securityId": 3027, "sector": "plantations" },
+    { "id": 3794, "name": "B P P L HOLDINGS PLC", "symbol": "BPPL.N0000", "securityId": 1524, "sector": "diversified" },
+    { "id": 188, "name": "BAIRAHA FARMS PLC", "symbol": "BFL.N0000", "securityId": 452, "sector": "agriculture" },
+    { "id": 193, "name": "BALANGODA  PLANTATIONS  PLC", "symbol": "BALA.N0000", "securityId": 705, "sector": "plantations" },
+    { "id": 3080, "name": "BANSEI ROYAL RESORTS HIKKADUWA PLC", "symbol": "BRR.N0000", "securityId": 1322, "sector": "hotels" },
+    { "id": 2188, "name": "BERUWALA RESORTS PLC", "symbol": "BERU.N0000", "securityId": 1201, "sector": "hotels" },
+    { "id": 189, "name": "BOGALA GRAPHITE LANKA PLC", "symbol": "BOGA.N0000", "securityId": 664, "sector": "manufacturing" },
+    { "id": 34, "name": "BOGAWANTALAWA TEA ESTATES PLC", "symbol": "BOPL.N0000", "securityId": 706, "sector": "plantations" },
+    { "id": 25, "name": "BROWN & COMPANY PLC", "symbol": "BRWN.N0000", "securityId": 764, "sector": "diversified" },
+    { "id": 128, "name": "BROWNS BEACH HOTELS PLC", "symbol": "BBH.N0000", "securityId": 525, "sector": "hotels" },
+    { "id": 1851, "name": "BROWNS INVESTMENTS PLC", "symbol": "BIL.N0000", "securityId": 1077, "sector": "diversified" },
+    { "id": 165, "name": "BUKIT DARAH PLC", "symbol": "BUKI.N0000", "securityId": 456, "sector": "plantations" },
+    { "id": 308, "name": "C M HOLDINGS PLC", "symbol": "COLO.N0000", "securityId": 693, "sector": "diversified" },
+    { "id": 510, "name": "C T HOLDINGS PLC", "symbol": "CTHR.N0000", "securityId": 503, "sector": "diversified" },
+    { "id": 520, "name": "C T LAND DEVELOPMENT PLC", "symbol": "CTLD.N0000", "securityId": 614, "sector": "real estate" },
+    { "id": 335, "name": "C. W. MACKIE PLC", "symbol": "CWM.N0000", "securityId": 765, "sector": "trading" },
+    { "id": 6052, "name": "CABLE SOLUTIONS PLC", "symbol": "CSLK.N0000", "securityId": 3198, "sector": "manufacturing" },
+    { "id": 6297, "name": "CAL FIVE YEAR CLOSED END FUND (\"Units\")", "symbol": "CALC.U0000", "securityId": 3279, "sector": "funds" },
+    { "id": 5892, "name": "CAL FIVE YEAR OPTIMUM FUND (\"Units\")", "symbol": "CALI.U0000", "securityId": 3138, "sector": "funds" },
+    { "id": 6378, "name": "CAPITAL ALLIANCE HOLDINGS LIMITED", "symbol": "CALH.N0000", "securityId": 3319, "sector": "financial" },
+    { "id": 5293, "name": "CAPITAL ALLIANCE PLC", "symbol": "CALT.N0000", "securityId": 2647, "sector": "financial" },
+    { "id": 551, "name": "CARGILLS (CEYLON) PLC", "symbol": "CARG.N0000", "securityId": 457, "sector": "retail" },
+    { "id": 5852, "name": "CARGILLS BANK PLC", "symbol": "CBNK.N0000", "securityId": 3118, "sector": "banking" },
+    { "id": 22, "name": "CARGO BOAT DEVELOPMENT COMPANY PLC", "symbol": "CABO.N0000", "securityId": 615, "sector": "transportation" },
+    { "id": 336, "name": "CARSON CUMBERBATCH PLC", "symbol": "CARS.N0000", "securityId": 502, "sector": "diversified" },
+    { "id": 447, "name": "CENTRAL FINANCE COMPANY PLC", "symbol": "CFIN.N0000", "securityId": 366, "sector": "financial" },
+    { "id": 224, "name": "CENTRAL INDUSTRIES PLC", "symbol": "CIND.N0000", "securityId": 665, "sector": "manufacturing" },
+    { "id": 91, "name": "CEYLINCO HOLDINGS PLC", "symbol": "CINS.N0000", "securityId": 367, "sector": "insurance" },
+    { "id": 560, "name": "CEYLON BEVERAGE HOLDINGS PLC", "symbol": "BREW.N0000", "securityId": 458, "sector": "beverages" },
+    { "id": 426, "name": "CEYLON COLD STORES PLC", "symbol": "CCS.N0000", "securityId": 462, "sector": "retail" },
+    { "id": 74, "name": "CEYLON GRAIN ELEVATORS PLC", "symbol": "GRAN.N0000", "securityId": 671, "sector": "agriculture" },
+    { "id": 196, "name": "CEYLON GUARDIAN INVESTMENT TRUST PLC", "symbol": "GUAR.N0000", "securityId": 607, "sector": "financial" },
+    { "id": 264, "name": "CEYLON HOSPITALS PLC", "symbol": "CHL.N0000", "securityId": 514, "sector": "healthcare" },
+    { "id": 383, "name": "CEYLON HOTELS CORPORATION PLC", "symbol": "CHOT.N0000", "securityId": 545, "sector": "hotels" },
+    { "id": 133, "name": "CEYLON INVESTMENT PLC", "symbol": "CINV.N0000", "securityId": 608, "sector": "financial" },
+    { "id": 461, "name": "CEYLON LAND & EQUITY PLC", "symbol": "KZOO.N0000", "securityId": 732, "sector": "real estate" },
+    { "id": 1522, "name": "CEYLON TEA BROKERS PLC", "symbol": "CTBL.N0000", "securityId": 923, "sector": "commodities" },
+    { "id": 381, "name": "CEYLON TOBACCO COMPANY PLC", "symbol": "CTC.N0000", "securityId": 460, "sector": "manufacturing" },
+    { "id": 529, "name": "CHEMANEX PLC", "symbol": "CHMX.N0000", "securityId": 492, "sector": "chemicals" },
+    { "id": 131, "name": "CHEVRON LUBRICANTS  LANKA  PLC", "symbol": "LLUB.N0000", "securityId": 668, "sector": "petroleum" },
+    { "id": 4966, "name": "CHRISSWORLD PLC", "symbol": "CWL.N0000", "securityId": 2236, "sector": "diversified" },
+    { "id": 162, "name": "C I C HOLDINGS PLC", "symbol": "CIC.N0000", "securityId": 493, "sector": "diversified" },
+    { "id": 1630, "name": "CITIZENS DEVELOPMENT BUSINESS FINANCE PLC", "symbol": "CDB.N0000", "securityId": 981, "sector": "financial" },
+    { "id": 101, "name": "CITRUS LEISURE PLC", "symbol": "REEF.N0000", "securityId": 568, "sector": "hotels" },
+    { "id": 5353, "name": "Co-operative Insurance Company PLC", "symbol": "COOP.N0000", "securityId": 2692, "sector": "insurance" },
+    { "id": 44, "name": "COLOMBO CITY HOLDINGS PLC", "symbol": "PHAR.N0000", "securityId": 744, "sector": "pharmaceuticals" },
+    { "id": 267, "name": "COLOMBO DOCKYARD PLC", "symbol": "DOCK.N0000", "securityId": 442, "sector": "engineering" },
+    { "id": 385, "name": "COLOMBO FORT INVESTMENTS PLC", "symbol": "CFI.N0000", "securityId": 609, "sector": "financial" },
+    { "id": 277, "name": "COLOMBO INVESTMENT TRUST PLC", "symbol": "CIT.N0000", "securityId": 610, "sector": "financial" },
+    { "id": 378, "name": "COLOMBO LAND AND DEVELOPMENT COMPANY PLC", "symbol": "CLND.N0000", "securityId": 618, "sector": "real estate" },
+    { "id": 208, "name": "COMMERCIAL BANK OF CEYLON PLC", "symbol": "COMB.N0000", "securityId": 369, "sector": "banking" },
+    { "id": 1798, "name": "COMMERCIAL CREDIT AND FINANCE PLC", "symbol": "COCR.N0000", "securityId": 1063, "sector": "financial" },
+    { "id": 490, "name": "COMMERCIAL DEVELOPMENT COMPANY PLC", "symbol": "COMD.N0000", "securityId": 619, "sector": "real estate" },
+    { "id": 168, "name": "CONVENIENCE FOODS LANKA PLC", "symbol": "SOY.N0000", "securityId": 488, "sector": "food" },
+    { "id": 123, "name": "DANKOTUWA PORCELAIN PLC", "symbol": "DPL.N0000", "securityId": 669, "sector": "manufacturing" },
+    { "id": 239, "name": "DFCC BANK PLC", "symbol": "DFCC.N0000", "securityId": 371, "sector": "banking" },
+    { "id": 471, "name": "DIALOG AXIATA PLC", "symbol": "DIAL.N0000", "securityId": 389, "sector": "telecommunications" },
+    { "id": 1965, "name": "DIALOG FINANCE PLC", "symbol": "CALF.N0000", "securityId": 1101, "sector": "financial" },
+    { "id": 375, "name": "DIESEL & MOTOR ENGINEERING PLC", "symbol": "DIMO.N0000", "securityId": 694, "sector": "automotive" },
+    { "id": 6172, "name": "DIGITAL MOBILITY SOLUTIONS LANKA PLC", "symbol": "PKME.N0000", "securityId": 3218, "sector": "technology" },
+    { "id": 327, "name": "DILMAH CEYLON TEA COMPANY PLC", "symbol": "CTEA.N0000", "securityId": 489, "sector": "beverages" },
+    { "id": 399, "name": "DIPPED PRODUCTS PLC", "symbol": "DIPD.N0000", "securityId": 670, "sector": "manufacturing" },
+    { "id": 68, "name": "DISTILLERIES COMPANY OF SRI LANKA PLC", "symbol": "DIST.N0000", "securityId": 463, "sector": "beverages" },
+    { "id": 455, "name": "DOLPHIN HOTELS PLC", "symbol": "STAF.N0000", "securityId": 603, "sector": "hotels" },
+    { "id": 26, "name": "E B CREASY & COMPANY PLC", "symbol": "EBCR.N0000", "securityId": 745, "sector": "trading" },
+    { "id": 5173, "name": "E M L CONSULTANTS PLC", "symbol": "EML.N0000", "securityId": 2386, "sector": "services" },
+    { "id": 460, "name": "E - CHANNELLING PLC", "symbol": "ECL.N0000", "securityId": 374, "sector": "technology" },
+    { "id": 403, "name": "EAST WEST PROPERTIES PLC", "symbol": "EAST.N0000", "securityId": 620, "sector": "real estate" },
+    { "id": 405, "name": "EASTERN MERCHANTS PLC", "symbol": "EMER.N0000", "securityId": 767, "sector": "trading" },
+    { "id": 348, "name": "EDEN HOTEL LANKA PLC", "symbol": "EDEN.N0000", "securityId": 533, "sector": "hotels" },
+    { "id": 115, "name": "ELPITIYA PLANTATIONS PLC", "symbol": "ELPL.N0000", "securityId": 707, "sector": "plantations" },
+    { "id": 113, "name": "EQUITY TWO PLC", "symbol": "ETWO.N0000", "securityId": 621, "sector": "financial" },
+    { "id": 5231, "name": "Ex-pack Corrugated Cartons PLC", "symbol": "PACK.N0000", "securityId": 2511, "sector": "manufacturing" },
+    { "id": 5472, "name": "EXTERMINATORS PLC", "symbol": "EXT.N0000", "securityId": 2741, "sector": "services" },
+    { "id": 528, "name": "FIRST CAPITAL HOLDINGS PLC", "symbol": "CFVF.N0000", "securityId": 698, "sector": "financial" },
+    { "id": 5330, "name": "First Capital Treasuries PLC", "symbol": "FCT.N0000", "securityId": 1426, "sector": "financial" },
+    { "id": 116, "name": "GALADARI HOTELS (LANKA) PLC", "symbol": "GHLL.N0000", "securityId": 541, "sector": "hotels" },
+    { "id": 533, "name": "GALLE FACE CAPITAL PARTNERS PLC", "symbol": "WAPO.N0000", "securityId": 612, "sector": "financial" },
+    { "id": 466, "name": "GESTETNER OF CEYLON PLC", "symbol": "GEST.N0000", "securityId": 746, "sector": "technology" },
+    { "id": 2091, "name": "GREENTECH ENERGY PLC", "symbol": "MEL.N0000", "securityId": 1161, "sector": "energy" },
+    { "id": 132, "name": "HAPUGASTENNE PLANTATIONS PLC", "symbol": "HAPU.N0000", "securityId": 708, "sector": "plantations" },
+    { "id": 167, "name": "HARISCHANDRA MILLS PLC", "symbol": "HARI.N0000", "securityId": 482, "sector": "food" },
+    { "id": 172, "name": "HATTON NATIONAL BANK PLC", "symbol": "HNB.N0000", "securityId": 373, "sector": "banking" },
+    { "id": 4058, "name": "HATTON PLANTATIONS PLC", "symbol": "HPL.N0000", "securityId": 1045, "sector": "plantations" },
+    { "id": 31, "name": "HAYCARB PLC", "symbol": "HAYC.N0000", "securityId": 494, "sector": "manufacturing" },
+    { "id": 331, "name": "HAYLEYS FABRIC PLC", "symbol": "MGT.N0000", "securityId": 403, "sector": "textiles" },
+    { "id": 524, "name": "HAYLEYS FIBRE PLC", "symbol": "HEXP.N0000", "securityId": 768, "sector": "manufacturing" },
+    { "id": 214, "name": "HAYLEYS LEISURE PLC", "symbol": "CONN.N0000", "securityId": 532, "sector": "hotels" },
+    { "id": 175, "name": "HAYLEYS PLC", "symbol": "HAYL.N0000", "securityId": 505, "sector": "diversified" },
+    { "id": 5431, "name": "HELA APPAREL HOLDINGS PLC", "symbol": "HELA.N0000", "securityId": 2727, "sector": "apparel" },
+    { "id": 325, "name": "HEMAS HOLDINGS PLC", "symbol": "HHL.N0000", "securityId": 506, "sector": "healthcare" },
+    { "id": 2229, "name": "HIKKADUWA BEACH RESORT PLC", "symbol": "CITH.N0000", "securityId": 1222, "sector": "hotels" },
+    { "id": 5, "name": "HNB ASSURANCE PLC", "symbol": "HASU.N0000", "securityId": 375, "sector": "insurance" },
+    { "id": 4680, "name": "HNB FINANCE PLC", "symbol": "HNBF.N0000", "securityId": 1992, "sector": "financial" },
+    { "id": 103, "name": "HORANA PLANTATIONS PLC", "symbol": "HOPL.N0000", "securityId": 709, "sector": "plantations" },
+    { "id": 183, "name": "HOTEL SIGIRIYA PLC", "symbol": "HSIG.N0000", "securityId": 544, "sector": "hotels" },
+    { "id": 355, "name": "HOUSING DEVELOPMENT FINANCE CORPORATION BANK OF SL", "symbol": "HDFC.N0000", "securityId": 376, "sector": "banking" },
+    { "id": 5311, "name": "hSenid Business Solutions PLC", "symbol": "HBS.N0000", "securityId": 2652, "sector": "technology" },
+    { "id": 276, "name": "HUNAS HOLDINGS PLC", "symbol": "HUNA.N0000", "securityId": 546, "sector": "hotels" },
+    { "id": 134, "name": "HUNTER & COMPANY PLC", "symbol": "HUNT.N0000", "securityId": 747, "sector": "trading" },
+    { "id": 1786, "name": "HVA FOODS PLC", "symbol": "HVA.N0000", "securityId": 1046, "sector": "food" },
+    { "id": 269, "name": "INDUSTRIAL ASPHALTS (CEYLON) PLC", "symbol": "ASPH.N0000", "securityId": 495, "sector": "construction" },
+    { "id": 3495, "name": "JANASHAKTHI FINANCE PLC", "symbol": "BFN.N0000", "securityId": 1072, "sector": "financial" },
+    { "id": 941, "name": "JANASHAKTHI INSURANCE PLC", "symbol": "JINS.N0000", "securityId": 841, "sector": "insurance" },
+    { "id": 5127, "name": "JAT HOLDINGS PLC", "symbol": "JAT.N0000", "securityId": 2353, "sector": "diversified" },
+    { "id": 4019, "name": "JETWING SYMPHONY PLC", "symbol": "JETS.N0000", "securityId": 1686, "sector": "hotels" },
+    { "id": 297, "name": "JOHN KEELLS HOLDINGS PLC", "symbol": "JKH.N0000", "securityId": 508, "sector": "diversified" },
+    { "id": 104, "name": "JOHN KEELLS HOTELS PLC", "symbol": "KHL.N0000", "securityId": 561, "sector": "hotels" },
+    { "id": 284, "name": "JOHN KEELLS PLC", "symbol": "JKL.N0000", "securityId": 731, "sector": "diversified" },
+    { "id": 8, "name": "KAHAWATTE  PLANTATIONS  PLC", "symbol": "KAHA.N0000", "securityId": 710, "sector": "plantations" },
+    { "id": 5371, "name": "KAPRUKA HOLDINGS PLC", "symbol": "KPHL.N0000", "securityId": 2714, "sector": "e-commerce" },
+    { "id": 227, "name": "KEELLS FOOD PRODUCTS PLC", "symbol": "KFP.N0000", "securityId": 483, "sector": "food" },
+    { "id": 372, "name": "KEGALLE  PLANTATIONS  PLC", "symbol": "KGAL.N0000", "securityId": 711, "sector": "plantations" },
+    { "id": 279, "name": "KELANI CABLES PLC", "symbol": "KCAB.N0000", "securityId": 672, "sector": "manufacturing" },
+    { "id": 82, "name": "KELANI TYRES PLC", "symbol": "TYRE.N0000", "securityId": 673, "sector": "automotive" },
+    { "id": 316, "name": "KELANI VALLEY PLANTATIONS PLC", "symbol": "KVAL.N0000", "securityId": 712, "sector": "plantations" },
+    { "id": 241, "name": "KERNER HAUS GLOBAL SOLUTIONS PLC", "symbol": "CPRT.N0000", "securityId": 730, "sector": "technology" },
+    { "id": 147, "name": "KOTAGALA PLANTATIONS PLC", "symbol": "KOTA.N0000", "securityId": 713, "sector": "plantations" },
+    { "id": 322, "name": "LB FINANCE PLC", "symbol": "LFIN.N0000", "securityId": 379, "sector": "financial" },
+    { "id": 18, "name": "LANKA ALUMINIUM INDUSTRIES PLC", "symbol": "LALU.N0000", "securityId": 674, "sector": "manufacturing" },
+    { "id": 550, "name": "LANKA ASHOK LEYLAND PLC", "symbol": "ASHO.N0000", "securityId": 695, "sector": "automotive" },
+    { "id": 259, "name": "LANKA CERAMIC PLC", "symbol": "CERA.N0000", "securityId": 676, "sector": "manufacturing" },
+    { "id": 5251, "name": "LANKA CREDIT AND BUSINESS FINANCE PLC", "symbol": "LCBF.N0000", "securityId": 2512, "sector": "financial" },
+    { "id": 553, "name": "LANKA IOC PLC", "symbol": "LIOC.N0000", "securityId": 729, "sector": "petroleum" },
+    { "id": 518, "name": "LANKA MILK FOODS (CWE) PLC", "symbol": "LMF.N0000", "securityId": 486, "sector": "food" },
+    { "id": 250, "name": "LANKA REALTY INVESTMENTS PLC", "symbol": "ASCO.N0000", "securityId": 401, "sector": "real estate" },
+    { "id": 337, "name": "LANKA TILES PLC", "symbol": "TILE.N0000", "securityId": 677, "sector": "manufacturing" },
+    { "id": 443, "name": "LANKA VENTURES PLC", "symbol": "LVEN.N0000", "securityId": 377, "sector": "financial" },
+    { "id": 67, "name": "LANKA WALLTILE PLC", "symbol": "LWL.N0000", "securityId": 678, "sector": "manufacturing" },
+    { "id": 527, "name": "LANKEM CEYLON PLC", "symbol": "LCEY.N0000", "securityId": 497, "sector": "chemicals" },
+    { "id": 546, "name": "LANKEM DEVELOPMENTS PLC", "symbol": "LDEV.N0000", "securityId": 446, "sector": "chemicals" },
+    { "id": 1724, "name": "LAUGFS GAS PLC", "symbol": "LGL.N0000", "securityId": 1020, "sector": "energy" },
+    { "id": 4561, "name": "LAUGFS POWER PLC", "symbol": "LPL.N0000", "securityId": 1930, "sector": "energy" },
+    { "id": 382, "name": "LAXAPANA PLC", "symbol": "LITE.N0000", "securityId": 498, "sector": "manufacturing" },
+    { "id": 415, "name": "LION BREWERY (CEYLON) PLC", "symbol": "LION.N0000", "securityId": 485, "sector": "beverages" },
+    { "id": 1847, "name": "LOLC FINANCE PLC", "symbol": "LOFC.N0000", "securityId": 1073, "sector": "financial" },
+    { "id": 5355, "name": "LOLC GENERAL INSURANCE PLC", "symbol": "LGIL.N0000", "securityId": 2693, "sector": "insurance" },
+    { "id": 410, "name": "L O L C HOLDINGS PLC", "symbol": "LOLC.N0000", "securityId": 378, "sector": "financial" },
+    { "id": 1665, "name": "LOTUS HYDRO POWER PLC", "symbol": "HPFL.N0000", "securityId": 1000, "sector": "energy" },
+    { "id": 5532, "name": "LUMINEX PLC", "symbol": "LUMX.N0000", "securityId": 2790, "sector": "manufacturing" },
+    { "id": 4038, "name": "L V L ENERGY FUND PLC", "symbol": "LVEF.N0000", "securityId": 1707, "sector": "energy" },
+    { "id": 170, "name": "MADULSIMA  PLANTATIONS  PLC", "symbol": "MADU.N0000", "securityId": 721, "sector": "plantations" },
+    { "id": 6032, "name": "MAHARAJA FOODS PLC", "symbol": "MFPE.N0000", "securityId": 3178, "sector": "food" },
+    { "id": 4439, "name": "MAHAWELI COCONUT PLANTATIONS PLC", "symbol": "MCPL.N0000", "securityId": 1907, "sector": "plantations" },
+    { "id": 187, "name": "MAHAWELI REACH HOTELS PLC", "symbol": "MRH.N0000", "securityId": 563, "sector": "hotels" },
+    { "id": 439, "name": "MALWATTE VALLEY PLANTATION PLC", "symbol": "MAL.N0000", "securityId": 722, "sector": "plantations" },
+    { "id": 107, "name": "MARAWILA  RESORTS  PLC", "symbol": "MARA.N0000", "securityId": 564, "sector": "hotels" },
+    { "id": 388, "name": "MASKELIYA PLANTATIONS PLC", "symbol": "MASK.N0000", "securityId": 723, "sector": "plantations" },
+    { "id": 3695, "name": "MELSTACORP PLC", "symbol": "MELS.N0000", "securityId": 1507, "sector": "diversified" },
+    { "id": 209, "name": "MERCANTILE SHIPPING COMPANY PLC", "symbol": "MSL.N0000", "securityId": 742, "sector": "transportation" },
+    { "id": 400, "name": "MERCHANT BANK OF SRI LANKA & FINANCE PLC", "symbol": "MBSL.N0000", "securityId": 380, "sector": "banking" },
+    { "id": 3055, "name": "MILLENNIUM HOUSING DEVELOPERS PLC", "symbol": "MHDL.N0000", "securityId": 1304, "sector": "real estate" },
+    { "id": 384, "name": "MULLER & PHIPPS (CEYLON) PLC", "symbol": "MULL.N0000", "securityId": 763, "sector": "trading" },
+    { "id": 5351, "name": "MYLAND DEVELOPMENTS PLC", "symbol": "MDL.N0000", "securityId": 2672, "sector": "real estate" },
+    { "id": 291, "name": "NAMUNUKULA PLANTATIONS PLC", "symbol": "NAMU.N0000", "securityId": 725, "sector": "plantations" },
+    { "id": 77, "name": "NATIONAL DEVELOPMENT BANK PLC", "symbol": "NDB.N0000", "securityId": 386, "sector": "banking" },
+    { "id": 9, "name": "NATIONS TRUST BANK PLC", "symbol": "NTB.N0000", "securityId": 387, "sector": "banking" },
+    { "id": 230, "name": "NAWALOKA HOSPITALS PLC", "symbol": "NHL.N0000", "securityId": 980, "sector": "healthcare" },
+    { "id": 1596, "name": "ODEL PLC", "symbol": "ODEL.N0000", "securityId": 960, "sector": "retail" },
+    { "id": 526, "name": "OFFICE EQUIPMENT PLC", "symbol": "OFEQ.N0000", "securityId": 769, "sector": "technology" },
+    { "id": 492, "name": "ON'ALLY HOLDINGS PLC", "symbol": "ONAL.N0000", "securityId": 627, "sector": "diversified" },
+    { "id": 387, "name": "OVERSEAS REALTY (CEYLON) PLC", "symbol": "OSEA.N0000", "securityId": 628, "sector": "real estate" },
+    { "id": 354, "name": "PALM GARDEN HOTELS PLC", "symbol": "PALM.N0000", "securityId": 529, "sector": "hotels" },
+    { "id": 105, "name": "PAN ASIA BANKING CORPORATION PLC", "symbol": "PABC.N0000", "securityId": 388, "sector": "banking" },
+    { "id": 1784, "name": "PANASIAN POWER PLC", "symbol": "PAP.N0000", "securityId": 1040, "sector": "energy" },
+    { "id": 504, "name": "PEGASUS HOTELS OF CEYLON PLC", "symbol": "PEG.N0000", "securityId": 567, "sector": "hotels" },
+    { "id": 3461, "name": "PEOPLE'S INSURANCE PLC", "symbol": "PINS.N0000", "securityId": 1465, "sector": "insurance" },
+    { "id": 1968, "name": "PEOPLE'S LEASING & FINANCE PLC", "symbol": "PLC.N0000", "securityId": 1103, "sector": "financial" },
+    { "id": 486, "name": "PGP GLASS CEYLON PLC", "symbol": "GLAS.N0000", "securityId": 666, "sector": "manufacturing" },
+    { "id": 523, "name": "PMF FINANCE PLC", "symbol": "PMB.N0000", "securityId": 405, "sector": "financial" },
+    { "id": 4986, "name": "PRIME LANDS RESIDENCIES PLC", "symbol": "PLR.N0000", "securityId": 2279, "sector": "real estate" },
+    { "id": 258, "name": "PRINTCARE PLC", "symbol": "CARE.N0000", "securityId": 681, "sector": "printing" },
+    { "id": 3815, "name": "R I L PROPERTY PLC", "symbol": "RIL.N0000", "securityId": 1544, "sector": "real estate" },
+    { "id": 203, "name": "RADIANT GEMS INTERNATIONAL PLC", "symbol": "RGEM.N0000", "securityId": 770, "sector": "gems" },
+    { "id": 1561, "name": "RAIGAM WAYAMBA SALTERNS PLC", "symbol": "RWSL.N0000", "securityId": 948, "sector": "salt" },
+    { "id": 2150, "name": "RAMBODA FALLS PLC", "symbol": "RFL.N0000", "securityId": 1185, "sector": "energy" },
+    { "id": 1485, "name": "RENUKA AGRI FOODS PLC", "symbol": "RAL.N0000", "securityId": 901, "sector": "agriculture" },
+    { "id": 478, "name": "RENUKA CITY HOTELS PLC.", "symbol": "RENU.N0000", "securityId": 569, "sector": "hotels" },
+    { "id": 507, "name": "RENUKA FOODS PLC", "symbol": "COCO.N0000", "securityId": 461, "sector": "food" },
+    { "id": 701, "name": "RENUKA HOLDINGS PLC", "symbol": "RHL.N0000", "securityId": 821, "sector": "diversified" },
+    { "id": 3938, "name": "RENUKA HOTELS PLC", "symbol": "RCH.N0000", "securityId": 1631, "sector": "hotels" },
+    { "id": 1446, "name": "RESUS ENERGY PLC", "symbol": "HPWR.N0000", "securityId": 881, "sector": "energy" },
+    { "id": 511, "name": "RICHARD PIERIS AND COMPANY PLC", "symbol": "RICH.N0000", "securityId": 509, "sector": "diversified" },
+    { "id": 164, "name": "RICHARD PIERIS EXPORTS PLC", "symbol": "REXP.N0000", "securityId": 771, "sector": "manufacturing" },
+    { "id": 503, "name": "ROYAL CERAMICS LANKA PLC", "symbol": "RCL.N0000", "securityId": 683, "sector": "manufacturing" },
+    { "id": 55, "name": "ROYAL PALMS BEACH HOTELS PLC", "symbol": "RPBH.N0000", "securityId": 581, "sector": "hotels" },
+    { "id": 266, "name": "SAMPATH BANK PLC", "symbol": "SAMP.N0000", "securityId": 431, "sector": "banking" },
+    { "id": 117, "name": "SAMSON INTERNATIONAL PLC", "symbol": "SIL.N0000", "securityId": 684, "sector": "manufacturing" },
+    { "id": 2147, "name": "SANASA DEVELOPMENT BANK PLC", "symbol": "SDB.N0000", "securityId": 1182, "sector": "banking" },
+    { "id": 5291, "name": "SARVODAYA DEVELOPMENT FINANCE PLC", "symbol": "SDF.N0000", "securityId": 2567, "sector": "financial" },
+    { "id": 479, "name": "SATHOSA MOTORS PLC", "symbol": "SMOT.N0000", "securityId": 696, "sector": "automotive" },
+    { "id": 1789, "name": "SENKADAGALA FINANCE COMPANY PLC", "symbol": "SFCL.N0000", "securityId": 441, "sector": "financial" },
+    { "id": 246, "name": "SERENDIB HOTELS PLC", "symbol": "SHOT.N0000", "securityId": 601, "sector": "hotels" },
+    { "id": 42, "name": "SEYLAN BANK PLC", "symbol": "SEYB.N0000", "securityId": 443, "sector": "banking" },
+    { "id": 505, "name": "SEYLAN DEVELOPMENTS PLC", "symbol": "CSD.N0000", "securityId": 617, "sector": "real estate" },
+    { "id": 142, "name": "SIERRA CABLES PLC", "symbol": "SIRA.N0000", "securityId": 685, "sector": "manufacturing" },
+    { "id": 437, "name": "SIGIRIYA VILLAGE HOTELS PLC", "symbol": "SIGV.N0000", "securityId": 602, "sector": "hotels" },
+    { "id": 512, "name": "SINGER (SRI LANKA) PLC", "symbol": "SINS.N0000", "securityId": 772, "sector": "retail" },
+    { "id": 1785, "name": "SINGER FINANCE LANKA PLC", "symbol": "SFIN.N0000", "securityId": 1041, "sector": "financial" },
+    { "id": 3307, "name": "SINGHE HOSPITALS PLC", "symbol": "SINH.N0000", "securityId": 1444, "sector": "healthcare" },
+    { "id": 185, "name": "SMB FINANCE PLC", "symbol": "SEMB.N0000", "securityId": 445, "sector": "financial" },
+    { "id": 1944, "name": "SOFTLOGIC CAPITAL PLC", "symbol": "SCAP.N0000", "securityId": 1100, "sector": "financial" },
+    { "id": 1041, "name": "SOFTLOGIC FINANCE PLC", "symbol": "CRL.N0000", "securityId": 863, "sector": "financial" },
+    { "id": 1849, "name": "SOFTLOGIC HOLDINGS PLC", "symbol": "SHL.N0000", "securityId": 1075, "sector": "diversified" },
+    { "id": 118, "name": "SOFTLOGIC LIFE INSURANCE PLC", "symbol": "AAIC.N0000", "securityId": 364, "sector": "insurance" },
+    { "id": 556, "name": "SRI LANKA TELECOM PLC", "symbol": "SLTL.N0000", "securityId": 390, "sector": "telecommunications" },
+    { "id": 153, "name": "STANDARD CAPITAL PLC", "symbol": "SING.N0000", "securityId": 499, "sector": "financial" },
+    { "id": 238, "name": "SUNSHINE HOLDINGS PLC", "symbol": "SUN.N0000", "securityId": 510, "sector": "diversified" },
+    { "id": 119, "name": "SWISSTEK (CEYLON) PLC", "symbol": "PARQ.N0000", "securityId": 679, "sector": "manufacturing" },
+    { "id": 468, "name": "TAL LANKA HOTELS PLC", "symbol": "TAJ.N0000", "securityId": 604, "sector": "hotels" },
+    { "id": 477, "name": "TALAWAKELLE TEA ESTATES PLC", "symbol": "TPL.N0000", "securityId": 726, "sector": "plantations" },
+    { "id": 482, "name": "TANGERINE BEACH HOTELS PLC", "symbol": "TANG.N0000", "securityId": 605, "sector": "hotels" },
+    { "id": 484, "name": "TEA SMALLHOLDER FACTORIES PLC", "symbol": "TSML.N0000", "securityId": 490, "sector": "tea" },
+    { "id": 1854, "name": "TEEJAY LANKA PLC", "symbol": "TJL.N0000", "securityId": 1080, "sector": "apparel" },
+    { "id": 4, "name": "TESS AGRO PLC", "symbol": "TESS.N0000", "securityId": 781, "sector": "agriculture" },
+    { "id": 306, "name": "THE AUTODROME PLC", "symbol": "AUTO.N0000", "securityId": 692, "sector": "automotive" },
+    { "id": 525, "name": "THE COLOMBO FORT LAND AND BUILDING PLC", "symbol": "CFLB.N0000", "securityId": 504, "sector": "real estate" },
+    { "id": 414, "name": "THE FORTRESS RESORTS PLC", "symbol": "RHTL.N0000", "securityId": 534, "sector": "hotels" },
+    { "id": 329, "name": "THE KANDY HOTELS COMPANY (1938) PLC", "symbol": "KHC.N0000", "securityId": 547, "sector": "hotels" },
+    { "id": 253, "name": "THE KINGSBURY PLC", "symbol": "SERV.N0000", "securityId": 543, "sector": "hotels" },
+    { "id": 40, "name": "THE LANKA HOSPITALS CORPORATION PLC", "symbol": "LHCL.N0000", "securityId": 516, "sector": "healthcare" },
+    { "id": 317, "name": "THE  LIGHTHOUSE  HOTEL  PLC", "symbol": "LHL.N0000", "securityId": 562, "sector": "hotels" },
+    { "id": 363, "name": "THE NUWARA ELIYA HOTELS COMPANY PLC", "symbol": "NEH.N0000", "securityId": 566, "sector": "hotels" },
+    { "id": 93, "name": "THREE ACRE FARMS PLC", "symbol": "TAFL.N0000", "securityId": 491, "sector": "agriculture" },
+    { "id": 411, "name": "TOKYO CEMENT COMPANY (LANKA) PLC", "symbol": "TKYO.N0000", "securityId": 688, "sector": "manufacturing" },
+    { "id": 499, "name": "TRANS ASIA HOTELS PLC", "symbol": "TRAN.N0000", "securityId": 606, "sector": "hotels" },
+    { "id": 5732, "name": "UB FINANCE PLC", "symbol": "UBF.N0000", "securityId": 2998, "sector": "financial" },
+    { "id": 561, "name": "UDAPUSSELLAWA  PLANTATIONS PLC", "symbol": "UDPL.N0000", "securityId": 727, "sector": "plantations" },
+    { "id": 425, "name": "UNION ASSURANCE PLC", "symbol": "UAL.N0000", "securityId": 450, "sector": "insurance" },
+    { "id": 1790, "name": "UNION BANK OF COLOMBO PLC", "symbol": "UBC.N0000", "securityId": 1047, "sector": "banking" },
+    { "id": 278, "name": "UNION CHEMICALS LANKA PLC", "symbol": "UCAR.N0000", "securityId": 500, "sector": "chemicals" },
+    { "id": 262, "name": "UNITED MOTORS LANKA PLC", "symbol": "UML.N0000", "securityId": 697, "sector": "automotive" },
+    { "id": 1563, "name": "VALLIBEL FINANCE PLC", "symbol": "VFIN.N0000", "securityId": 949, "sector": "financial" },
+    { "id": 1848, "name": "VALLIBEL ONE PLC", "symbol": "VONE.N0000", "securityId": 1074, "sector": "diversified" },
+    { "id": 473, "name": "VALLIBEL POWER ERATHNA PLC", "symbol": "VPEL.N0000", "securityId": 454, "sector": "energy" },
+    { "id": 300, "name": "VIDULLANKA PLC", "symbol": "VLL.N0000", "securityId": 455, "sector": "energy" },
+    { "id": 1971, "name": "WASKADUWA BEACH RESORT PLC", "symbol": "CITW.N0000", "securityId": 1106, "sector": "hotels" },
+    { "id": 148, "name": "WATAWALA  PLANTATIONS  PLC", "symbol": "WATA.N0000", "securityId": 728, "sector": "plantations" },
+    { "id": 4887, "name": "WINDFORCE PLC", "symbol": "WIND.N0000", "securityId": 2173, "sector": "energy" },
+    { "id": 180, "name": "YORK ARCADE HOLDINGS PLC", "symbol": "YORK.N0000", "securityId": 641, "sector": "real estate" }
+        ];
+
+        let currentFilter = 'all';
+        let directoryVisible = false;
+
+        const searchInput = document.getElementById('companySearch');
+        const companyGrid = document.getElementById('companyGrid');
+
+        // Enhanced search functionality
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            renderCompanyGrid(query);
+        });
+
+        function renderCompanyGrid(searchQuery = '') {
+            let filtered = companyData;
+
+            // Apply search filter
+            if (searchQuery) {
+                filtered = filtered.filter(company => 
+                    company.name.toLowerCase().includes(searchQuery) || 
+                    company.symbol.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            // Apply sector filter
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(company => company.sector === currentFilter);
+            }
+
+            companyGrid.innerHTML = filtered.map(company => `
+                <div class="company-card">
+                    <div class="company-card-header">
+                        <div class="company-symbol">${company.symbol}</div>
+                        <button class="copy-symbol" onclick="copyToClipboard('${company.symbol}')">Copy</button>
+                    </div>
+                    <div class="company-name">${company.name}</div>
+                    <div class="company-meta">
+                        <span>ID: ${company.id}</span>
+                        <span>Security: ${company.securityId}</span>
+                    </div>
+                </div>
+            `).join('');
         }
-      ],
-    ]
-    </details>
-  </section>
+
+        function toggleDirectory() {
+            directoryVisible = !directoryVisible;
+            companyGrid.style.display = directoryVisible ? 'grid' : 'none';
+            
+            const button = document.querySelector('.directory-controls .control-button');
+            button.textContent = directoryVisible ? 'Hide Companies' : 'Show All Companies';
+            
+            if (directoryVisible) {
+                renderCompanyGrid();
+            }
+        }
+
+        function filterBySector(sector) {
+            currentFilter = sector;
+            
+            // Update active button
+            document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (directoryVisible) {
+                renderCompanyGrid(searchInput.value.toLowerCase());
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show visual feedback
+                event.target.textContent = 'Copied!';
+                event.target.style.background = 'var(--success)';
+                
+                setTimeout(() => {
+                    event.target.textContent = 'Copy';
+                    event.target.style.background = 'transparent';
+                }, 1000);
+            });
+        }
+
+        function copyPopularSymbols() {
+            const popularSymbols = [
+                'JKH.N0000', 'COMB.N0000', 'HNB.N0000', 'SAMP.N0000', 
+                'SEYB.N0000', 'DFCC.N0000', 'DIAL.N0000', 'LOLC.N0000'
+            ].join(', ');
+            
+            copyToClipboard(popularSymbols);
+            alert('Popular company symbols copied to clipboard!');
+        }
+
+        function downloadCompanyData(format) {
+            if (format === 'json') {
+                const dataStr = JSON.stringify(companyData, null, 2);
+                downloadFile('company_data.json', dataStr, 'application/json');
+            } else if (format === 'csv') {
+                const headers = ['ID', 'Name', 'Symbol', 'Security ID', 'Sector'];
+                const csvContent = [
+                    headers.join(','),
+                    ...companyData.map(company => [
+                        company.id,
+                        `"${company.name}"`,
+                        company.symbol,
+                        company.securityId,
+                        company.sector
+                    ].join(','))
+                ].join('\\n');
+                
+                downloadFile('company_data.csv', csvContent, 'text/csv');
+            }
+        }
+
+        function downloadFile(filename, content, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showApiExamples() {
+            const examples = `
+// Example API requests using company symbols:
+
+// Get company information
+fetch('https://www.cse.lk/api/companyInfoSummery', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'symbol=JKH.N0000'
+})
+
+// Multiple requests for different companies
+const symbols = ['JKH.N0000', 'COMB.N0000', 'HNB.N0000'];
+symbols.forEach(symbol => {
+    fetch('https://www.cse.lk/api/companyInfoSummery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'symbol=' + symbol
+    }).then(response => response.json())
+      .then(data => console.log(data));
+});
+
+// cURL example
+curl -X POST https://www.cse.lk/api/companyInfoSummery \\
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d "symbol=JKH.N0000"
+            `;
+            
+            alert(examples);
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                    if (targetElement.tagName === 'DETAILS') {
+                        targetElement.setAttribute('open', '');
+                    }
+                }
+            });
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pre-load some popular companies in the search
+            searchInput.placeholder = "Search companies... Try: JKH, COMB, or Banking";
+        });
+    </script>
 </body>
 </html>
