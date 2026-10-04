@@ -113,8 +113,13 @@ def comprehensive_api_test():
     )
     
     print_json_response(
-        "14. Chart Data (LOLC)", 
-        cse.get_chart_data("LOLC.N0000")
+        "14. Chart Data (ASPI, 1 week)",
+        cse.get_chart_data(period=2)
+    )
+
+    print_json_response(
+        "14b. Stock Chart Data (LOLC, 1 week)",
+        cse.get_stock_chart_data("LOLC.N0000", period=2)
     )
     
     print_json_response(
@@ -202,9 +207,11 @@ def specific_stock_analysis(symbol: str):
                 break
     
     # Get chart data
-    chart_data = cse.get_chart_data(symbol)
+    chart_data = cse.get_stock_chart_data(symbol, period=2)
     if chart_data['success']:
-        print("📈 Chart data available")
+        points = chart_data['data'].get('chartData', [])
+        closes = ", ".join(f"{p['p']}" for p in points)
+        print(f"📈 Last {len(points)} closes: {closes}")
     else:
         print(f"📈 Chart data: {chart_data.get('error', 'Not available')}")
 

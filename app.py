@@ -1,28 +1,57 @@
+import os
 import requests
 import json
-from typing import Optional, Dict, Any, List
+from datetime import date, datetime
+from typing import Optional, Dict, Any, List, Union
 
 class CSE_API:
     """
     Colombo Stock Exchange API Client
     All endpoints use POST requests with application/x-www-form-urlencoded data
+
+    Most endpoints are public. Authenticated endpoints (e.g. historicalTrades)
+    need the `accessToken` cookie that cse.lk sets when you log in, passed to
+    the constructor or set in the CSE_ACCESS_TOKEN environment variable.
     """
-    
-    def __init__(self):
+
+    def __init__(self, access_token: Optional[str] = None):
+        """
+        Args:
+            access_token (str, optional): Value of the cse.lk `accessToken` cookie
+                (expires ~3 hours after login). Defaults to the CSE_ACCESS_TOKEN
+                environment variable.
+        """
         self.base_url = "https://www.cse.lk/api/"
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
-    
-    def _make_request(self, endpoint: str, data: Optional[Dict[str, Any]] = None, method: str = "POST") -> Dict[str, Any]:
-        """Make a request to the CSE API"""
+        self.access_token = None
+        self.set_access_token(access_token or os.environ.get('CSE_ACCESS_TOKEN'))
+
+    def set_access_token(self, access_token: Optional[str]) -> None:
+        """Set or replace the token used for authenticated endpoints (e.g. after it expires)"""
+        # Tolerate values copied from browser devtools, which show the cookie in quotes
+        self.access_token = access_token.strip().strip('"').strip() if access_token else None
+
+    def _make_request(self, endpoint: str, data: Optional[Dict[str, Any]] = None, method: str = "POST",
+                      auth: bool = False) -> Dict[str, Any]:
+        """Make a request to the CSE API (auth=True sends the access token)"""
+        if auth and not self.access_token:
+            return {
+                'success': False,
+                'error': f'{endpoint} requires an access token. Pass access_token=... to CSE_API() '
+                         'or set the CSE_ACCESS_TOKEN environment variable.',
+                'status_code': None
+            }
+        cookies = {'accessToken': self.access_token} if auth else None
         try:
             if method.upper() == "GET":
                 response = requests.get(
                     self.base_url + endpoint,
                     params=data or {},
                     headers=self.headers,
+                    cookies=cookies,
                     timeout=30
                 )
             else:
@@ -30,6 +59,7 @@ class CSE_API:
                     self.base_url + endpoint,
                     data=data or {},
                     headers=self.headers,
+                    cookies=cookies,
                     timeout=30
                 )
             response.raise_for_status()
@@ -39,10 +69,18 @@ class CSE_API:
                 'data': response.json()
             }
         except requests.exceptions.RequestException as e:
+            status_code = getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None
+            error = str(e)
+            # CSE answers a bad/expired accessToken with 417 and an unknown symbol with an empty 404
+            if auth and status_code == 417:
+                error = (f'HTTP 417 from {endpoint}: the access token is invalid or expired. Log in to '
+                         f'cse.lk again and copy the new accessToken cookie. ({e})')
+            elif auth and status_code == 404:
+                error = f'HTTP 404 from {endpoint}: CSE found no data (check the symbol). ({e})'
             return {
                 'success': False,
-                'error': str(e),
-                'status_code': getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None
+                'error': error,
+                'status_code': status_code
             }
         except json.JSONDecodeError as e:
             return {
@@ -238,18 +276,119 @@ class CSE_API:
         """
         return self._make_request("snpData")
     
-    def get_chart_data(self, symbol: str) -> Dict[str, Any]:
+    def get_chart_data(self, period: int = 2, chart_id: int = 1) -> Dict[str, Any]:
         """
-        Get chart data for stocks
-        Note: May return HTTP 400 for some symbols
-        
+        Get index chart data (chart_id 1 = ASPI; other IDs return empty lists)
+
         Args:
-            symbol (str): Stock symbol
-        
+            period (int): 1 = today (intraday), 2 = 1 week, 3 = ~1 month,
+                          4 = ~3 months, 5 = ~1 year
+            chart_id (int): Index chart ID (default 1 = ASPI)
+
         Returns:
-            Dict containing chart data for the specified symbol
+            Dict whose data is a list of points:
+            - d: Timestamp (epoch ms)
+            - v: Index value
+            - pc: Percentage change
+            Note: points in periods 2-5 are mostly pre-open snapshots, so they
+            approximate (not exactly equal) daily closing values.
         """
-        return self._make_request("chartData", {"symbol": symbol})
+        return self._make_request("chartData", {"chartId": chart_id, "period": period})
+
+    def _get_stock_id(self, symbol: str) -> Optional[int]:
+        """Resolve a symbol to the stock `id` used by chart endpoints (not securityId)"""
+        if not hasattr(self, '_stock_ids'):
+            self._stock_ids = {}
+            data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'company_data', 'data.json')
+            try:
+                with open(data_path, 'r', encoding='utf-8') as f:
+                    self._stock_ids = {c['symbol'].upper(): c['id'] for c in json.load(f)}
+            except (OSError, ValueError, KeyError):
+                pass
+
+        symbol = symbol.upper()
+        if symbol not in self._stock_ids:
+            # Not in the local list (new listing or stale data.json) - ask the API
+            info = self.get_company_info(symbol)
+            stock_id = (info.get('data') or {}).get('reqSymbolInfo', {}).get('id') if info['success'] else None
+            if stock_id is None:
+                return None
+            self._stock_ids[symbol] = stock_id
+        return self._stock_ids[symbol]
+
+    def get_stock_chart_data(self, symbol: str, period: int = 2) -> Dict[str, Any]:
+        """
+        Get price history for a single stock
+
+        Args:
+            symbol (str): Stock symbol (e.g., 'LOLC.N0000')
+            period (int): 1 = today (intraday), 2 = 1 week, 3 = ~1 month,
+                          4 = ~3 months, 5 = ~1 year
+
+        Returns:
+            Dict whose data contains 'chartData', a list of points:
+            - t: Trade date (epoch ms)
+            - p: Closing price
+            - h / l: High / low price
+            - q: Share volume
+            (o, c, pc and n are returned but have always been null)
+        """
+        stock_id = self._get_stock_id(symbol)
+        if stock_id is None:
+            return {
+                'success': False,
+                'error': f'Unknown symbol: {symbol}',
+                'status_code': None
+            }
+        return self._make_request("companyChartDataByStock", {"stockId": stock_id, "period": period})
+
+    @staticmethod
+    def _format_dmy(value: Union[str, date, datetime]) -> str:
+        """Format a date as DD-MM-YYYY; accepts date/datetime, 'YYYY-MM-DD' or 'DD-MM-YYYY'"""
+        if isinstance(value, (date, datetime)):
+            return value.strftime('%d-%m-%Y')
+        for fmt in ('%Y-%m-%d', '%d-%m-%Y'):
+            try:
+                return datetime.strptime(value, fmt).strftime('%d-%m-%Y')
+            except ValueError:
+                pass
+        raise ValueError(f"Invalid date {value!r}: use a date object, 'YYYY-MM-DD' or 'DD-MM-YYYY'")
+
+    def get_historical_trades(self, symbol: str, from_date: Union[str, date, datetime],
+                              to_date: Union[str, date, datetime, None] = None,
+                              period: str = "D") -> Dict[str, Any]:
+        """
+        Get OHLC trade history for a stock over any date range (requires an access token)
+        History goes back to the stock's listing (e.g. ABAN.N0000 from 1995). Rows are newest first.
+
+        Args:
+            symbol (str): Stock symbol (e.g., 'ABAN.N0000')
+            from_date: Start date - a date object, 'YYYY-MM-DD' or 'DD-MM-YYYY'
+            to_date: End date in the same formats (defaults to today)
+            period (str): 'D' = daily, 'W' = weekly, 'M' = monthly, 'Y' = yearly
+
+        Returns:
+            Dict whose data holds one list, keyed by period:
+            - 'D': data['reqDaysOhlc'], one row per trading day:
+              tradeDate (epoch ms), open, high, low, close, turnover,
+              shareVolume, tradeVolume (number of trades), securityId, id
+              (open and low are occasionally null, mostly in early years)
+            - 'W'/'M'/'Y': data['reqOhlcHistory'], one row per period:
+              period ('2025-01', '2025', ...), open, high, low, closingPrice,
+              turnover, shareVolume, tradeVolume, daysTraded, and the dates
+              (epoch ms) of the opening, high, low and last trade: dateOpening,
+              dateHigh, dateLow, dateLastTraded
+        """
+        period = period.upper()
+        if period not in ('D', 'W', 'M', 'Y'):
+            raise ValueError(f"Invalid period {period!r}: use 'D', 'W', 'M' or 'Y'")
+        data = {
+            'symbol': symbol,
+            'fromDate': self._format_dmy(from_date),
+            'toDate': self._format_dmy(to_date or date.today()),
+            'period': period
+        }
+        return self._make_request("historicalTrades", data, auth=True)
     
     def get_all_sectors(self) -> Dict[str, Any]:
         """
@@ -299,7 +438,7 @@ class CSE_API:
     
     def get_financial_announcements(self) -> Dict[str, Any]:
         """
-        Get financial announcements
+        Get financial announcements (only the 5 newest - use get_financial_announcements_filtered for more)
         
         Returns:
             Dict containing financial announcements

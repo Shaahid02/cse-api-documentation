@@ -90,7 +90,33 @@ print(company['data'])
 | ------------------------ | ---------- | ----------------- | --------------------------- |
 | `get_aspi_data()`        | aspiData   | None              | All Share Price Index data  |
 | `get_snp_data()`         | snpData    | None              | S&P Sri Lanka 20 Index data |
-| `get_chart_data(symbol)` | chartData  | symbol (required) | Chart data for stocks       |
+| `get_chart_data(period, chart_id)` | chartData | period (1-5), chart_id (default 1 = ASPI) | Index chart history |
+| `get_stock_chart_data(symbol, period)` | companyChartDataByStock | symbol (required), period (1-5) | Daily price/volume history for one stock |
+| `get_historical_trades(symbol, from_date, to_date, period)` 🔒 | historicalTrades | symbol, from_date (required), to_date (default today), period `D`/`W`/`M`/`Y` (default `D`) | Full OHLC history since listing — **requires an access token** |
+
+#### 🔒 Authenticated Endpoints
+
+`historicalTrades` returns open/high/low/close, turnover and volume for any date range, back to the stock's listing (ABAN.N0000: 4,422 trading days from 1995). It needs the **`accessToken` cookie** that cse.lk sets when you log in:
+
+1. Log in at cse.lk, open browser DevTools → Application/Storage → Cookies → `https://www.cse.lk`, and copy the `accessToken` value.
+2. Give it to the client (prefer the environment variable so it never lands in code):
+
+```python
+# PowerShell: $env:CSE_ACCESS_TOKEN = "eyJ..."
+from app import CSE_API
+
+cse = CSE_API()                        # or CSE_API(access_token="eyJ...")
+r = cse.get_historical_trades("ABAN.N0000", "1995-07-01")   # to_date defaults to today
+if r['success']:
+    for row in r['data']['reqDaysOhlc'][:5]:                # newest first
+        print(row['tradeDate'], row['open'], row['high'], row['low'], row['close'], row['shareVolume'])
+```
+
+- `period`: `D` → `data['reqDaysOhlc']` (one row per trading day); `W`/`M`/`Y` → `data['reqOhlcHistory']` (one row per week/month/year, with `closingPrice`, `daysTraded` and the dates of the high/low). See the method docstring for all fields.
+- Dates can be `date` objects, `YYYY-MM-DD` or `DD-MM-YYYY`; they are sent as `DD-MM-YYYY`.
+- Status codes: **417** = token invalid or expired, **404** = no data / unknown symbol (also returned when no token is sent), **400** = a required parameter is missing.
+- Tokens expire about **3 hours** after login. Replace one with `cse.set_access_token("...")`.
+- Don't commit tokens to the repo.
 | `get_all_sectors()`      | allSectors | None              | All sector data             |
 
 ### Announcement APIs
@@ -167,21 +193,30 @@ tracker.generate_dividend_report()
 
 **`CSE_ReportDownloader`** (`tools/download_financial_reports.py`)
 
-- Download financial reports from CSE announcements
-- Filter by company, date range, and report type
-- Organize downloads with proper file naming
-- Generate download logs and summaries
+- Downloads the files companies publish under "Financial Reports" on cse.lk, back to 2007 (~23,000 files)
+- Report types (`--type`) and the folder each is saved in:
+  `interim` → *Interim & quarterly financial statements*, `annual` → *Annual reports* (incl. audited accounts),
+  `prospectus` → *Prospectuses*, `trust-deed` → *Trust deeds (debentures & bonds)*,
+  `accountants-report` → *Accountants' reports & five-year summaries*, `other` → *Other*
+- Filter by company symbol or name, date range, report type, or title text
+- Saves to `<output dir>/<SYMBOL>/<report type folder>/<date>_<title>_<id>.pdf`, where `<SYMBOL>` is the full symbol such as `LHCL.N0000` (bond-only issuers like `BOC` have no share symbol and keep the bare one), and skips files already downloaded, so reruns resume
+- Writes a log and a CSV manifest per run to `<output dir>/logs/` (default output dir: `reports/financial_reports`)
+
+```bash
+python tools/download_financial_reports.py --all --output-dir "D:/CSE/Reports"   # everything since 2007
+python tools/download_financial_reports.py                                   # last 12 months, all companies
+python tools/download_financial_reports.py --company LOLC,JKH --from-date 2015-01-01
+python tools/download_financial_reports.py --type annual --all
+python tools/download_financial_reports.py --company ABAN --type interim --list   # list without downloading
+```
 
 ```python
 from tools.download_financial_reports import CSE_ReportDownloader
 
 downloader = CSE_ReportDownloader()
-# Download reports for specific company and date range
-downloader.download_reports_by_company_name(
-    "ABANS ELECTRICALS",
-    "2024-01-01",
-    "2025-08-26"
-)
+downloader.download(from_date="2020-01-01", companies=["ABAN"], report_types=["annual"])
+# Older helpers still work, e.g.
+downloader.download_reports_by_company_name("ABANS ELECTRICALS", "2024-01-01", "2025-08-26")
 ```
 
 #### 🔍 Data Collection Tools
@@ -208,6 +243,21 @@ fetch_and_store_categories()  # Downloads and saves categories
 from tools.get_all_companies import main as get_all_companies
 
 get_all_companies()  # Fetches all companies A-Z
+```
+
+**Historical Trades Fetcher** (`tools/fetch_historical_trades.py`) 🔒
+
+- Loops through every company in `company_data/data.json` and saves its daily OHLC history to `historical_trades/<SYMBOL>.csv` (oldest first; columns `date, open, high, low, close, turnover, share_volume, trade_volume`)
+- Defaults to 1 Jan 2012 → today; needs the `accessToken` cookie (see [Authenticated Endpoints](#-authenticated-endpoints))
+- Logs every run to `historical_trades/logs/fetch_<timestamp>.log`, and failures to `failed_<timestamp>.csv`
+- Retries network/server errors; stops cleanly if the token expires — rerun with `--skip-existing` to resume
+
+```bash
+# PowerShell: $env:CSE_ACCESS_TOKEN = "eyJ..."
+python tools/fetch_historical_trades.py                          # all companies, 2012 -> today
+python tools/fetch_historical_trades.py --limit 5                # quick test
+python tools/fetch_historical_trades.py --skip-existing          # resume after a token expiry
+python tools/fetch_historical_trades.py --from-date 2020-01-01 --delay 2
 ```
 
 **Filter and Processing** (`tools/filter_scraper.py`)
@@ -250,10 +300,10 @@ downloader.download_reports_by_time_range("2024-01-01", "2025-08-26")
 │   ├── *_investment_analysis.json
 │   ├── *_raw_data.json
 │   └── *_failed_requests.json
-├── reports/                     # Downloaded financial reports
-│   ├── company_folders/
-│   │   └── *.pdf
-│   └── download_logs/
+├── reports/
+│   └── financial_reports/       # Downloaded financial reports (or --output-dir)
+│       ├── <SYMBOL>/<report type>/*.pdf
+│       └── logs/                # download_*.log, manifest_*.csv
 └── company_data/               # Company and category data
     ├── data.json
     └── announcement_categories.json
@@ -610,7 +660,7 @@ pip install -r requirements.txt
 ## 📝 Notes
 
 1. **Symbol Format**: Stock symbols typically end with `.N0000` or `.X0000`
-2. **Chart Data**: May return HTTP 400 for some symbols
+2. **Chart Data**: `period` is 1 = today (intraday), 2 = 1 week, 3 = ~1 month, 4 = ~3 months, 5 = ~1 year. `companyChartDataByStock` expects the stock `id` from `data.json` (not `securityId`); `get_stock_chart_data()` resolves it from the symbol for you
 3. **Market Hours**: Some data may be limited during market closed hours
 4. **Response Format**: All responses are in JSON format
 5. **New Features**:

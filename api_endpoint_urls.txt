@@ -16,7 +16,9 @@ https://www.cse.lk/api/marketStatus								                  Market open/close s
 https://www.cse.lk/api/marketSummery								                Market summary data	
 https://www.cse.lk/api/aspiData									                    All Share Price Index data	
 https://www.cse.lk/api/snpData									                    S&P Sri Lanka 20 Index data	
-https://www.cse.lk/api/chartData									                  Chart data for stocks	
+https://www.cse.lk/api/chartData									                  Index chart data (chartId, period)
+https://www.cse.lk/api/companyChartDataByStock                          Price history for one stock (stockId, period)
+https://www.cse.lk/api/historicalTrades                                 OHLC history since listing (symbol, fromDate, toDate DD-MM-YYYY, period D/W/M/Y) - requires accessToken cookie
 https://www.cse.lk/api/allSectors								                    All sector data	
 https://www.cse.lk/api/detailedTrades                                   Detailed Trades
 https://www.cse.lk/api/dailyMarketSummery                               Daily Market Summary
